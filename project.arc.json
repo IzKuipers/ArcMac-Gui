@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "name": "ArcMacGui",
+    "description": "Main GUI for the system management service",
+    "author": "Izaak Kuipers",
+    "version": "1.0.0",
+    "installLocation": "U:/Applications/IzK_ArcMacGui",
+    "appId": "IzK_ArcMacGui"
+  },
+  "outFile": "IzK_ArcMacGui.arc",
+  "payloadDir": "src",
+  "devPort": 3128,
+  "buildHash": "fd4371b9",
+  "noHotRelaunch": false
+}

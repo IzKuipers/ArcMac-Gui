@@ -1,0 +1,4 @@
+/* Scope CSS of your app by prefixing selectors with the app ID: */
+#IzK_ArcMacGui > div.body {
+	padding: 15px;
+}
