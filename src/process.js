@@ -1,58 +1,77 @@
 const html = await loadHtml("body.html");
+const { VolumeTrayProcess } = await load("js/volume.js");
+const { BrightnessTrayProcess } = await load("js/brightness.js");
 
-class proc extends ThirdPartyAppProcess {
-  volume = 0;
-  muted = false;
-  brightness = 0;
-  constructor(handler, pid, parentPid, app, workingDirectory, ...args) {
+class proc extends Process {
+  constructor(handler, pid, parentPid, app, workingDirectory) {
     super(handler, pid, parentPid, app, workingDirectory);
 
     this.service = daemon.serviceHost.getService("ArcMacMgmtSvc");
+    this.name = app.id;
+    this.app = { app };
   }
 
-  async render() {
-    const body = this.getBody();
-    body.innerHTML = html;
-    this.volumeControl = body.querySelector("#volumeControl");
-    this.brightnessControl = body.querySelector("#brightnessControl");
-    this.volumeMute = body.querySelector("#volumeMute");
-    this.sleepButton = body.querySelector("#sleepButton");
+  async start() {
+    /** @type {ShellRuntime} */
+    const shell = this.handler.getProcess(+env.get("shell_pid"));
 
-    this.service.status.subscribe((v) => {
-      this.updateState(v);
-    });
+    const brightnessIcon = await fs.direct(
+      util.join(workingDirectory, "img/brightness.svg")
+    );
+    const volumeIcon = await fs.direct(
+      util.join(workingDirectory, "img/volume.svg")
+    );
 
-    this.volumeControl.addEventListener("change", () => {
-      this.service.setVolume(this.volumeControl.value);
-    });
+    this.createSleepButton();
 
-    this.brightnessControl.addEventListener("change", () => {
-      this.service.brightnessSet(this.brightnessControl.value);
-    });
+    shell.trayHost.createTrayIcon(
+      this.pid,
+      "ArcMac_VolumeControl",
+      {
+        popup: {
+          width: 60,
+          height: 200,
+        },
+        icon: volumeIcon,
+      },
+      VolumeTrayProcess
+    );
 
-    this.volumeMute.addEventListener("click", () => {
-      this.service.mute();
-    });
+    shell.trayHost.createTrayIcon(
+      this.pid,
+      "ArcMac_BrightnessControl",
+      {
+        popup: {
+          width: 60,
+          height: 200,
+        },
+        icon: brightnessIcon,
+      },
+      BrightnessTrayProcess
+    );
+  }
 
+  createSleepButton() {
+    const sleepIcon = document.createElement("span");
+    sleepIcon.className = "lucide icon-moon";
+    this.sleepButton = document.createElement("button");
+    this.sleepButton.className = "sleep";
+    this.sleepButton.append(sleepIcon);
     this.sleepButton.addEventListener("click", async () => {
       handler.getProcess(+env.get("izk_screenlocker_pid"))?.show();
       await Sleep(500);
       this.service.sleep();
     });
+
+    const actions = document.querySelector(
+      "#arcShell div.startmenu div.actions"
+    );
+
+    actions?.append(this.sleepButton);
   }
 
-  /**
-   *
-   * @param {ManagementStatus} v
-   */
-  updateState(v) {
-    this.volume = v.volume;
-    this.brightness = v.brightness.percent;
-    this.muted = v.muted;
-
-    this.volumeControl.value = v.volume;
-    this.brightnessControl.value = v.brightness.percent;
-    this.volumeMute.innerText = v.muted ? "Unmute" : "Mute";
+  async stop() {
+    this.sleepButton?.remove();
   }
 }
 
