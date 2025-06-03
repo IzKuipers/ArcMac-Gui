@@ -19,6 +19,7 @@ class VolumeTrayProcess extends TrayIconProcess {
       if (this._disposed) return;
 
       this.service.setVolume(this.volumeControl.value);
+      this.soundBus.playSound("arcos.click");
     });
 
     this.muteButton.addEventListener("click", () => {
