@@ -3,7 +3,7 @@
     "name": "ArcMac GUI",
     "description": "The graphical user interface for the system management service",
     "author": "Izaak Kuipers",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "installLocation": "U:/Applications/IzK_ArcMacGui",
     "appId": "IzK_ArcMacGui"
   },
